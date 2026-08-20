@@ -9,10 +9,10 @@ from typing import Dict, Any
 @dataclass
 class SystemConfig:
     # Angel One SmartAPI Credentials
-    angelone_api_key: str = "WeUosnKy"
-    angelone_client_code: str = "AACK825219"
-    angelone_pin: str = "8004"
-    angelone_totp_secret: str = "5XHZ5JMIJLUWJDM4QUXWYAO46I"
+    angelone_api_key: str = ""
+    angelone_client_code: str = ""
+    angelone_pin: str = ""
+    angelone_totp_secret: str = ""
     feed_mode: str = "angelone"            # 'angelone', 'simulated', 'replay'
 
     # Index & Strike Selection Settings (BSE Sensex)
