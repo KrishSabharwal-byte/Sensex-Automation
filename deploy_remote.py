@@ -7,9 +7,9 @@ import os
 import sys
 import paramiko
 
-HOST = "62.72.59.120"
-USER = "root"
-PASS = "Root@#1234567"
+HOST = ""
+USER = ""
+PASS = ""
 REMOTE_DIR = "/root/sensex_algo"
 PORT = 6003
 
