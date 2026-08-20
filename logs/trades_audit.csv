@@ -1,0 +1,2 @@
+trade_id,side,strike,symbol,entry_time,exit_time,entry_price,exit_price,exit_reason,pnl_points,pnl_rupees,lot_size,duration_updates,duration_seconds
+1,CALL,77400,SENSEX_77400_CE,2026-08-20 13:51:47,2026-08-20 14:00:47,195.45,165.15,STOP LOSS HIT: 165.15 <= 165.45 (-30.0 pts),-30.3,-606.0,20,439,439.0

@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSE SENSEX • Algo Terminal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css?v=10">
+</head>
+
+<body class="apex-theme">
+
+    <!-- MAIN APP CONTAINER (SIDEBAR + CONTENT STAGE) -->
+    <div class="apex-app-wrapper">
+
+        <!-- 1. LEFT CONTROL & SETTINGS DOCK (SIDEBAR) -->
+        <aside class="apex-sidebar">
+            <!-- Brand Badge -->
+            <div class="sidebar-brand">
+                <div class="brand-hexagon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon>
+                        <line x1="12" y1="22" x2="12" y2="15.5"></line>
+                        <polyline points="22 8.5 12 15.5 2 8.5"></polyline>
+                    </svg>
+                </div>
+                <div class="brand-info">
+                    <span class="brand-title"><span class="brand-accent">SENSEX</span></span>
+                </div>
+            </div>
+
+            <!-- Feed Status Card -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">MARKET FEED</div>
+                <div class="live-source-pill" id="feedSourceStatus">
+                    <span class="live-dot"></span>
+                    <span id="feedSourceText">BSE LIVE FEED</span>
+                </div>
+                <div class="feed-sub-meta">
+                    <span id="marketSessionTime" class="clock-mono">--:--:--</span>
+                    <span id="pingStatus" class="ws-connected-tag">CONNECTED</span>
+                </div>
+            </div>
+
+            <!-- Execution Controls -->
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">SIMULATION CONTROLS</div>
+                <div class="sidebar-btn-stack">
+                    <button id="btnToggleAuto" class="side-btn btn-action-primary" onclick="toggleAutoPlay()">
+                        <span class="side-btn-icon">▶</span>
+                        <span>START AUTO</span>
+                    </button>
+                    <div class="side-btn-row">
+                        <button id="btnTriggerCall" class="side-btn btn-action-primary" onclick="triggerTestCall()"
+                            style="flex:1; border: 1px dashed var(--accent-emerald);" title="Test CALL Trade">
+                            <span>⚡ TEST CALL</span>
+                        </button>
+                        <button id="btnTriggerPut" class="side-btn btn-action-danger" onclick="triggerTestPut()"
+                            style="flex:1; border: 1px dashed var(--accent-rose);" title="Test PUT Trade">
+                            <span>⚡ TEST PUT</span>
+                        </button>
+                    </div>
+                    <div class="side-btn-row">
+                        <button id="btnTestAudio" class="side-btn btn-action-ghost" onclick="testTradeAlertSound()"
+                            style="flex:1;" title="Click to test trade activation alert chime">
+                            <span id="audioIcon">🔊 TEST SOUND</span>
+                        </button>
+                        <button id="btnReset" class="side-btn btn-action-danger" onclick="resetSession()"
+                            style="flex:1;">
+                            <span>⟲ RESET</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Engine Configuration Form -->
+            <div class="sidebar-section config-section-box">
+                <div class="sidebar-section-title">
+                    <span>RISK &amp; EXECUTION</span>
+                </div>
+                <form id="settingsForm" class="sidebar-config-form" onsubmit="saveSettings(event)">
+                    <div class="cfg-row">
+                        <div class="cfg-input-group">
+                            <label for="cfgSlPoints">Stop-Loss</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="cfgSlPoints" value="50" step="5" required>
+                                <span class="unit-tag">pts</span>
+                            </div>
+                        </div>
+                        <div class="cfg-input-group">
+                            <label for="cfgTpPoints">Target</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="cfgTpPoints" value="100" step="5" required>
+                                <span class="unit-tag">pts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cfg-row">
+                        <div class="cfg-input-group">
+                            <label for="cfgTrailTrigger">Trail Trigger</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="cfgTrailTrigger" value="25" step="1" required>
+                                <span class="unit-tag">pts</span>
+                            </div>
+                        </div>
+                        <div class="cfg-input-group">
+                            <label for="cfgTrailLock">Trail Lock</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="cfgTrailLock" value="15" step="1" required>
+                                <span class="unit-tag">pts</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cfg-row">
+                        <div class="cfg-input-group">
+                            <label for="cfgMaxTrades">Max Trades</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="cfgMaxTrades" value="5" min="1" max="100" required>
+                                <span class="unit-tag">/day</span>
+                            </div>
+                        </div>
+                        <div class="cfg-input-group">
+                            <label for="cfgLotSize">Lot Size</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="cfgLotSize" value="65" min="1" max="10000" required>
+                                <span class="unit-tag">qty</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cfg-toggles-container">
+                        <label class="cfg-checkbox-row">
+                            <input type="checkbox" id="cfgEnableTrailing" checked>
+                            <span>Enable Trailing SL</span>
+                        </label>
+                        <label class="cfg-checkbox-row">
+                            <input type="checkbox" id="cfgAutoSchedule" checked>
+                            <span>Auto 09:15–15:15 IST schedule</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" id="btnSaveSettings" class="cfg-save-btn">
+                        <span>💾 SAVE SETTINGS</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- 2. MAIN STAGE CONTENT (HEADER RIBBON + MAIN DASHBOARD) -->
+        <div class="apex-main-stage">
+
+            <!-- TOP PERFORMANCE & METRICS TICKER RIBBON -->
+            <header class="top-performance-ribbon">
+                <div class="ribbon-metric-item">
+                    <span class="ribbon-label">NET REALIZED P&amp;L</span>
+                    <span class="ribbon-value" id="metricTotalPnlInr">₹0.00</span>
+                </div>
+                <div class="ribbon-metric-item">
+                    <span class="ribbon-label">NET POINTS</span>
+                    <span class="ribbon-value" id="metricTotalPnlPts">0.00 pts</span>
+                </div>
+                <div class="ribbon-metric-item">
+                    <span class="ribbon-label">TOTAL TRADES</span>
+                    <span class="ribbon-value" id="metricTotalTrades">0</span>
+                </div>
+            </header>
+
+            <!-- CORE WORKBENCH SPLIT (LEFT: SPOT, STRIKES & STRATEGY MATRIX / RIGHT: INDICATORS & ACTIVE POSITION) -->
+            <div class="apex-core-split">
+
+                <!-- LEFT STAGE: SPOT SHOWCASE, DUAL STRIKES & STRATEGY ENGINE MATRIX -->
+                <div class="apex-chart-showcase-panel">
+                    <!-- Spot Header Card -->
+                    <div class="spot-showcase-bar">
+                        <div class="spot-primary-group">
+                            <span class="spot-symbol-name">BSE SENSEX INDEX</span>
+                            <div class="spot-price-large" id="spotLtpVal">--</div>
+                        </div>
+                        <div class="spot-secondary-group">
+                            <div class="alternation-box">
+                                <span class="alt-label-small">NEXT REQUIRED:</span>
+                                <span id="nextRequiredBadge" class="alt-badge ANY">ANY (FIRST)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dual Option Strike Cards -->
+                    <div class="dual-strikes-container">
+                        <div class="strike-card-modern strike-card-call">
+                            <div class="strike-modern-head">
+                                <span class="strike-tag-label call-highlight">CALL OPTION (CE)</span>
+                                <span class="strike-delta-label">~200 OTM</span>
+                            </div>
+                            <div class="strike-modern-value call-highlight" id="strikeCallVal">-- CE</div>
+                            <div class="strike-modern-foot">
+                                <span>LIVE STRIKE LTP:</span>
+                                <strong id="callPremiumVal" class="call-highlight">--</strong>
+                            </div>
+                        </div>
+
+                        <div class="strike-card-modern strike-card-put">
+                            <div class="strike-modern-head">
+                                <span class="strike-tag-label put-highlight">PUT OPTION (PE)</span>
+                                <span class="strike-delta-label">~200 OTM</span>
+                            </div>
+                            <div class="strike-modern-value put-highlight" id="strikePutVal">-- PE</div>
+                            <div class="strike-modern-foot">
+                                <span>LIVE STRIKE LTP:</span>
+                                <strong id="putPremiumVal" class="put-highlight">--</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Strategy Decision Matrix (Relocated from Right Stage) -->
+                    <div class="apex-panel-box matrix-panel-embedded">
+                        <div class="panel-box-header">
+                            <div class="header-icon-title">
+                                <span class="title-glow-dot dot-cyan"></span>
+                                <h4>Strategy Engine Matrix</h4>
+                            </div>
+                            <span id="decisionPill" class="alt-badge NO_TRADE">NO_TRADE</span>
+                        </div>
+
+                        <!-- Rule Lists -->
+                        <div class="matrix-rules-grid">
+                            <!-- Call Strategy -->
+                            <div class="strategy-column-box box-call-rule">
+                                <div class="col-head">
+                                    <span class="call-highlight">CALL RULES</span>
+                                    <span id="callAllStatus" class="rule-pill fail">WAITING</span>
+                                </div>
+                                <div class="rule-checklist">
+                                    <div class="rule-check-item">
+                                        <span>5M RSI &gt; 60</span>
+                                        <span id="badgeCallRsi5m" class="rule-pill fail">FAIL</span>
+                                    </div>
+                                    <div class="rule-check-item">
+                                        <span>15M RSI &gt; 60</span>
+                                        <span id="badgeCallRsi15m" class="rule-pill fail">FAIL</span>
+                                    </div>
+                                    <div class="rule-check-item">
+                                        <span>Close &gt; EMA20</span>
+                                        <span id="badgeCallEma" class="rule-pill fail">FAIL</span>
+                                    </div>
+                                    <div class="rule-check-item">
+                                        <span>5M ADX &gt; 20</span>
+                                        <span id="badgeCallAdx" class="rule-pill fail">FAIL</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Put Strategy -->
+                            <div class="strategy-column-box box-put-rule">
+                                <div class="col-head">
+                                    <span class="put-highlight">PUT RULES</span>
+                                    <span id="putAllStatus" class="rule-pill fail">WAITING</span>
+                                </div>
+                                <div class="rule-checklist">
+                                    <div class="rule-check-item">
+                                        <span>5M RSI &lt; 40</span>
+                                        <span id="badgePutRsi5m" class="rule-pill fail">FAIL</span>
+                                    </div>
+                                    <div class="rule-check-item">
+                                        <span>15M RSI &lt; 40</span>
+                                        <span id="badgePutRsi15m" class="rule-pill fail">FAIL</span>
+                                    </div>
+                                    <div class="rule-check-item">
+                                        <span>Close &lt; EMA20</span>
+                                        <span id="badgePutEma" class="rule-pill fail">FAIL</span>
+                                    </div>
+                                    <div class="rule-check-item">
+                                        <span>5M ADX &lt; 20</span>
+                                        <span id="badgePutAdx" class="rule-pill fail">FAIL</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RIGHT STAGE: TECHNICAL INDICATORS & ACTIVE POSITION TELEMETRY -->
+                <div class="apex-strategy-telemetry-panel">
+
+                    <!-- Technical Indicators Card (Horizontal Gauges) -->
+                    <div class="apex-panel-box tech-indicators-card">
+                        <div class="panel-box-header">
+                            <div class="header-icon-title">
+                                <span class="title-glow-dot dot-cyan"></span>
+                                <h4>Technical Indicators</h4>
+                            </div>
+                            <span class="indicator-live-badge">LIVE GAUGES</span>
+                        </div>
+
+                        <!-- Horizontal Gauge Rows -->
+                        <div class="technical-indicators-container">
+                            <!-- Row 1: RSI 5m -->
+                            <div class="tech-ind-row">
+                                <span class="tech-ind-name">RSI 5m</span>
+                                <div class="tech-ind-bar-track">
+                                    <div id="gaugeFillRsi5m" class="tech-ind-bar-fill fill-cyan" style="width: 50%;"></div>
+                                </div>
+                                <span id="valHeroRsi5m" class="tech-ind-val">--</span>
+                            </div>
+
+                            <!-- Row 2: RSI 15m -->
+                            <div class="tech-ind-row">
+                                <span class="tech-ind-name">RSI 15m</span>
+                                <div class="tech-ind-bar-track">
+                                    <div id="gaugeFillRsi15m" class="tech-ind-bar-fill fill-purple" style="width: 50%;"></div>
+                                </div>
+                                <span id="valHeroRsi15m" class="tech-ind-val">--</span>
+                            </div>
+
+                            <!-- Row 3: ADX -->
+                            <div class="tech-ind-row">
+                                <span class="tech-ind-name">ADX</span>
+                                <div class="tech-ind-bar-track">
+                                    <div id="gaugeFillAdx" class="tech-ind-bar-fill fill-amber" style="width: 30%;"></div>
+                                </div>
+                                <span id="valHeroAdx5m" class="tech-ind-val">--</span>
+                            </div>
+
+                            <!-- Row 4: EMA20 -->
+                            <div class="tech-ind-row">
+                                <span class="tech-ind-name">EMA20</span>
+                                <div class="tech-ind-bar-track">
+                                    <div id="gaugeFillEma" class="tech-ind-bar-fill fill-emerald" style="width: 50%;"></div>
+                                </div>
+                                <span id="valHeroEma20" class="tech-ind-val">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Position Cockpit -->
+                    <div class="apex-panel-box position-active-card" id="activeTradeCard">
+                        <div class="panel-box-header">
+                            <div class="header-icon-title">
+                                <span class="title-glow-dot dot-purple"></span>
+                                <h4>Active Position Telemetry</h4>
+                            </div>
+                            <span id="activeSideBadge" class="alt-badge" style="display:none;">CALL</span>
+                        </div>
+
+                        <!-- Idle State -->
+                        <div id="noActivePositionMsg" class="telemetry-idle-box">
+                            <div class="radar-ping-icon">⚡</div>
+                            <div class="idle-headline">NO ACTIVE POSITIONS</div>
+                            <span class="idle-subline">Scanning for multi-timeframe breakout signals...</span>
+                        </div>
+
+                        <!-- Active Position Content -->
+                        <div id="activePositionDetails" class="telemetry-active-box" style="display:none;">
+                            <div class="telemetry-sym-row">
+                                <span id="activeSymbol" class="active-sym-text">SENSEX_CE</span>
+                                <span id="activeHoldTime" class="active-duration-badge">0 ticks</span>
+                            </div>
+
+                            <div class="active-pnl-banner">
+                                <div class="pnl-hero-pts" id="activePnlPts">+0.00 pts</div>
+                                <div class="pnl-hero-rupees" id="activePnlInr">₹0.00</div>
+                            </div>
+
+                            <!-- Trailing SL Indicator Banner -->
+                            <div id="activeTrailingStatusBanner" class="tsl-status-banner" style="display:none;">
+                                <span>🛡️</span>
+                                <span id="activeTrailingStatusText">TSL Active: Locked SL at 0.00</span>
+                            </div>
+
+                            <div class="active-targets-row">
+                                <div class="target-card-cell">
+                                    <span class="t-label">ENTRY</span>
+                                    <span class="t-val" id="activeEntryVal">0.00</span>
+                                </div>
+                                <div class="target-card-cell cell-live">
+                                    <span class="t-label">LIVE LTP</span>
+                                    <span class="t-val val-cyan" id="activeLtpVal">0.00</span>
+                                </div>
+                                <div class="target-card-cell cell-sl">
+                                    <span class="t-label" id="labelSlOrTsl">STOP-LOSS</span>
+                                    <span class="t-val val-negative" id="activeSlVal">0.00</span>
+                                </div>
+                                <div class="target-card-cell cell-tp">
+                                    <span class="t-label">TARGET</span>
+                                    <span class="t-val val-positive" id="activeTpVal">0.00</span>
+                                </div>
+                            </div>
+
+                            <!-- Manual Exit Action Button -->
+                            <div class="active-action-row" style="margin-top: 10px;">
+                                <button id="btnManualExit" class="side-btn btn-action-danger"
+                                    onclick="manualExitTrade()"
+                                    style="width: 100%; padding: 8px 12px; font-weight: 800; font-size: 0.78rem; letter-spacing: 0.5px; border-radius: 8px; background: rgba(255, 0, 85, 0.15); border: 1px solid var(--accent-rose); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s ease;">
+                                    <span>🛑 MANUAL EXIT (CLOSE POSITION)</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- BOTTOM AUDIT LOG TABLE (FULL-WIDTH MODERN PANEL) -->
+            <section class="apex-panel-box audit-history-panel">
+                <div class="panel-box-header">
+                    <div class="header-icon-title">
+                        <span class="title-glow-dot dot-emerald"></span>
+                        <h4>Closed Trades Audit Log</h4>
+                    </div>
+                    <div class="panel-header-actions" style="display: flex; gap: 8px; align-items: center;">
+                        <button id="btnClearTradesLog" class="clear-btn-styled" onclick="clearClosedTradesAuditLog()"
+                            title="Clear Closed Trades Audit Log for today">
+                            <span>🗑 CLEAR TODAY'S LOG</span>
+                        </button>
+                        <button class="export-btn-styled" onclick="exportTradesCSV()"
+                            title="Export all closed trades to CSV">
+                            <span>⬇ EXPORT CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-scroll-wrap">
+                    <table class="apex-trade-table" id="tradeHistoryTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Side</th>
+                                <th>Strike</th>
+                                <th>Symbol</th>
+                                <th>Entry</th>
+                                <th>Exit</th>
+                                <th>P&amp;L (pts)</th>
+                                <th>P&amp;L (₹)</th>
+                                <th>Reason</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeHistoryBody">
+                            <tr>
+                                <td colspan="10" class="empty-trades-msg">
+                                    No completed trades in this session.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-shelf" id="toastContainer"></div>
+
+    <script src="/static/app.js?v=10"></script>
+</body>
+
+</html>
