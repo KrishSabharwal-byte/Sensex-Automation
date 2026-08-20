@@ -61,7 +61,7 @@ class SystemConfig:
     audit_market_file: str = "logs/market_ticks_audit.csv"
     
     # MongoDB Atlas Connection
-    mongo_uri: str = "mongodb+srv://crestviewcorporate_db_user:Crestviewcorporate@cluster0.zfk4ahy.mongodb.net/?appName=Cluster0"
+    mongo_uri: str = ""
     mongo_db_name: str = "new_logic"
     mongo_collection_name: str = "Sensex"
 
