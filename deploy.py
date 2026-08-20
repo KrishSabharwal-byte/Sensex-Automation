@@ -7,10 +7,10 @@ import os
 import sys
 import paramiko
 
-HOST = "62.72.59.120"
-USER = "root"
-PASSWORD = "Root@#1234567"
-PORT = 6003
+HOST = ""
+USER = ""
+PASSWORD = ""
+PORT = 
 REMOTE_DIR = "/root/sensex"
 
 LOCAL_DIR = os.path.dirname(os.path.abspath(__file__))
